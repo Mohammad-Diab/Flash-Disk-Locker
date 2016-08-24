@@ -1,0 +1,83 @@
+﻿<Window x:Class="Flash_disk_locker.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Flash_disk_locker"
+        mc:Ignorable="d"
+        Title="Disk Locker" Height="400" Width="550" Loaded="Window_Loaded" ResizeMode="NoResize" Icon="disk_locker.ico">
+    <Grid>
+        <Grid Height="32" VerticalAlignment="Top" Background="Black">
+            <StackPanel Height="32" Orientation="Horizontal" VerticalAlignment="Top" Margin="0,0,76,0">
+                <Label x:Name="locker_tab" FontSize="16" Content="Locker" Margin="0,0,5,0" Background="White" Foreground="Black" FontWeight="Bold" PreviewMouseLeftButtonUp="LockerTab_PreviewMouseLeftButtonUp"/>
+                <Label x:Name="log_tab"  FontSize="16" Content="Log" Margin="5,0,5,0" Background="Black" Foreground="White" Cursor="Hand" PreviewMouseLeftButtonUp="LogoTab_PreviewMouseLeftButtonUp"/>
+                <Label x:Name="info_tab"  FontSize="16" Content="Info" Margin="5,0,0,0" Background="Black" Foreground="White" Cursor="Hand" PreviewMouseLeftButtonUp="InfoTab_PreviewMouseLeftButtonUp"/>
+            </StackPanel>
+            <Rectangle x:Name="line" Fill="ForestGreen" Height="3" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="59"/>
+            <Button x:Name="main_btm" ToolTip="Refresh list" HorizontalAlignment="Right" VerticalAlignment="Top" Width="28" Height="28" Click="MainBtm_Click" Margin="0,2,10,0" Background="Transparent" BorderBrush="{x:Null}" Foreground="White">
+                <Image x:Name="btm_img" Source="Images/refresh.png"/>
+            </Button>
+            <Button x:Name="info_btm" ToolTip="Disk info" HorizontalAlignment="Right" VerticalAlignment="Top" Width="28" Height="28" Margin="0,2,43,0" Background="Transparent" BorderBrush="{x:Null}" Foreground="White" Click="ViewDiskInfo_ButtonClick">
+                <Image x:Name="btm_img1" Source="Images/info.png"/>
+            </Button>
+        </Grid>
+        <Grid x:Name="main_grid" Margin="10,37,10,5">
+            <Grid Width="530" HorizontalAlignment="Left">
+                <ListView x:Name="disk_lstbx" Background="Transparent" Margin="0,0,10,80" ItemsSource="{Binding}" SelectionChanged="DiskList_SelectionChanged">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="Disk Name" Width="100">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" Margin="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                                            <Image Margin="0" Source="{Binding Path=Img}" Height="24" Width="24" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+                                            <TextBlock Margin="4,0,0,0" Text="{Binding Path=Name}" HorizontalAlignment="Left" FontSize="14" TextTrimming="CharacterEllipsis"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="Disk ID" Width="50"  DisplayMemberBinding="{Binding Path=ID}"/>
+                            <GridViewColumn Header="State" Width="50">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Rectangle Width="25" Margin="0" HorizontalAlignment="Left" VerticalAlignment="Top" ToolTip="{Binding Path=LockedTooltip}" Height="20">
+                                            <Rectangle.Fill>
+                                                <SolidColorBrush Color="{Binding Path=ReadOnly}"/>
+                                            </Rectangle.Fill>
+                                        </Rectangle>
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                            <GridViewColumn Header="Status" Width="65" DisplayMemberBinding="{Binding Path=Status}"/>
+                            <GridViewColumn Header="Size" Width="65" DisplayMemberBinding="{Binding Path=Size}"/>
+                            <GridViewColumn Header="Free" Width="65" DisplayMemberBinding="{Binding Path=Free}"/>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+                <Button x:Name="action_btm" Margin="0,0,10,10" VerticalAlignment="Bottom" Height="58" ToolTip="Mark as readonly" Background="Black" Click="Action_btm_Click">
+                    <StackPanel Orientation="Horizontal">
+                        <Image x:Name="action_btm_img" Source="Images/lock.png" Width="36"/>
+                        <Label x:Name="action_btm_txt" Foreground="White" Content="Lock" FontSize="30"/>
+                    </StackPanel>
+                </Button>
+                <TextBox x:Name="textBox" Height="150" Margin="10,42,10,0" TextWrapping="Wrap" VerticalAlignment="Top" Visibility="Hidden"/>
+            </Grid>
+            <Grid Width="530" HorizontalAlignment="Left" Margin="575,0,0,0">
+                <TextBox x:Name="log_txtbx" IsReadOnly="True" FontSize="10" TextWrapping="Wrap" FontFamily="Consolas" Background="Black" Foreground="White" BorderBrush="{x:Null}" SelectionBrush="Gainsboro"/>
+            </Grid>
+            <Grid Width="530" HorizontalAlignment="Left" Margin="1150,0,0,0">
+                <Image Height="128" VerticalAlignment="Top" Source="Images/icon.png" Margin="120,30,120,0"/>
+                <TextBlock Text="Dr.Mohammad@outlook.com " Margin="60,0,0,25" VerticalAlignment="Bottom" FontSize="16" FontFamily="Segoe Print" Foreground="RoyalBlue" TextAlignment="Center" HorizontalAlignment="Left"/>
+                <TextBlock Margin="10,180,10,0" VerticalAlignment="Top" FontSize="18" TextAlignment="Center">
+                    <TextBlock.Foreground>
+                        <LinearGradientBrush EndPoint="0.5,1" MappingMode="RelativeToBoundingBox" StartPoint="0.5,0">
+                            <GradientStop Color="#FF2929F1" Offset="0.996"/>
+                            <GradientStop Color="Black"/>
+                        </LinearGradientBrush>
+                    </TextBlock.Foreground><Run Text="Disk Locker tool"/><LineBreak/><Run Text="v1.1.0.285"/></TextBlock>
+                <Image HorizontalAlignment="Left" Margin="20,0,0,20" Width="30" Height="40" VerticalAlignment="Bottom" Source="Images/xbill.png" FlowDirection="LeftToRight"/>
+            </Grid>
+        </Grid>
+
+    </Grid>
+</Window>
