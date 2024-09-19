@@ -74,7 +74,7 @@
                             <GradientStop Color="#FF2929F1" Offset="0.996"/>
                             <GradientStop Color="Black"/>
                         </LinearGradientBrush>
-                    </TextBlock.Foreground><Run Text="Disk Locker tool"/><LineBreak/><Run Text="v1.1.0.285"/></TextBlock>
+                    </TextBlock.Foreground><Run Text="Disk Locker tool"/><LineBreak/><Run Text="v1.1.1.0"/></TextBlock>
                 <Image HorizontalAlignment="Left" Margin="20,0,0,20" Width="30" Height="40" VerticalAlignment="Bottom" Source="Images/xbill.png" FlowDirection="LeftToRight"/>
             </Grid>
         </Grid>
