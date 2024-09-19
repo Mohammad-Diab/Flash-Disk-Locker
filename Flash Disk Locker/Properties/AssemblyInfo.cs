@@ -7,11 +7,11 @@ using System.Windows;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Flash disk locker")]
+[assembly: AssemblyTitle("Flash Disk Locker")]
 [assembly: AssemblyDescription("Lock your removable media to protect it.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Disk locker")]
+[assembly: AssemblyProduct("Disk Locker")]
 [assembly: AssemblyCopyright("Copyright © Dr.Mohammad 2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
