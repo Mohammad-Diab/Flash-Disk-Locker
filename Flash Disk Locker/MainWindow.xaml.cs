@@ -165,7 +165,8 @@ namespace Flash_disk_locker
 
         void GetDisk(bool startup)
         {
-            //IsEnabled = false;
+            IsEnabled = false;
+            int selected_number = disk_lstbx.SelectedIndex > -1 ? (disk_lstbx.SelectedItem as ListItem).Number : -1;
             data_binding.Clear();
             if (!startup)
             {
@@ -211,6 +212,8 @@ namespace Flash_disk_locker
                     var item = args.UserState as ListItem;
                     item.Img = new BitmapImage(new Uri("pack://application:,,,/Images/" + (item.Type == DiskType.SSD ? "SSD" : item.Type == DiskType.Flash ? "Flash" : "HDD") + ".png"));
                     data_binding.Add(item);
+                    if (item.Number == selected_number)
+                        disk_lstbx.SelectedItem = item;
                 }
             };
 
@@ -357,7 +360,7 @@ namespace Flash_disk_locker
         {
             if (disk_lstbx.SelectedIndex > -1)
             {
-                //IsEnabled = false;
+                IsEnabled = false;
                 log.AppendLine("**********************************************");
                 log.AppendLine();
                 BackgroundWorker bw = new BackgroundWorker();
@@ -391,6 +394,7 @@ namespace Flash_disk_locker
 
                 bw.RunWorkerCompleted += (object sender, RunWorkerCompletedEventArgs args) =>
                 {
+                    GetDisk(false);
                     if (args.Error != null)
                         MessageBox.Show("Error\n" + args.Error.Message, "Disk locker", MessageBoxButton.OK, MessageBoxImage.Exclamation);
                     else
