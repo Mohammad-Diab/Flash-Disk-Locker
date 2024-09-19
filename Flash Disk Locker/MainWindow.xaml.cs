@@ -416,11 +416,6 @@ namespace Flash_disk_locker
                 MessageBox.Show("Please select a disk first.", "Flash Disk Locker", MessageBoxButton.OK, MessageBoxImage.Asterisk);
         }
 
-        private void InfoBtm_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Hello Human", "Flash Disk Locker", MessageBoxButton.OK, MessageBoxImage.Asterisk);
-        }
-
         static ListItem MakeListItem(string row, List<int> columns, string detail)
         {
             var multi_lines = detail.Split(new[] { "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
