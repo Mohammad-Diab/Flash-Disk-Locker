@@ -11,7 +11,7 @@ using System.Windows;
 [assembly: AssemblyDescription("Lock your removable media to protect it.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Disk Locker")]
+[assembly: AssemblyProduct("Flash Disk Locker")]
 [assembly: AssemblyCopyright("Copyright © Dr.Mohammad 2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

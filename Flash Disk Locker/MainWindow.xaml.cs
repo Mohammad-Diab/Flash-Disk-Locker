@@ -158,7 +158,7 @@ namespace Flash_disk_locker
                     log.Clear();
                     break;
                 case TabItem.Info:
-                    MessageBox.Show("Coming Soon...", "Disk locker", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show("Coming Soon...", "Flash Disk Locker", MessageBoxButton.OK, MessageBoxImage.Information);
                     break;
             }
         }
@@ -220,7 +220,7 @@ namespace Flash_disk_locker
             bw.RunWorkerCompleted += (object sender, RunWorkerCompletedEventArgs args) =>
               {
                   if (args.Error != null)
-                      MessageBox.Show("Error\n" + args.Error.Message, "Disk locker", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                      MessageBox.Show("Error\n" + args.Error.Message, "Flash Disk Locker", MessageBoxButton.OK, MessageBoxImage.Exclamation);
                   IsEnabled = true;
               };
 
@@ -339,7 +339,7 @@ namespace Flash_disk_locker
         {
             if (!IsRunningAsAdmin())
             {
-                MessageBox.Show("This app needs administrator rights. Please run it as administrator.", "Disk locker", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("This app needs administrator rights. Please run it as administrator.", "Flash Disk Locker", MessageBoxButton.OK, MessageBoxImage.Error);
                 Application.Current.Shutdown();
             }
             else
@@ -363,7 +363,7 @@ namespace Flash_disk_locker
                 ListItem selected_disk = disk_lstbx.SelectedItem as ListItem;
                 if (!selected_disk.IsRemovable)
                 {
-                    var result = MessageBox.Show(string.Format("{0} ({1}) is not a removable disk: it may be a system or internal disk.\n\nDo you really want to make it {2}?", selected_disk.Name, selected_disk.ID, _readonly ? "read-only" : "writable"), "Disk locker", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
+                    var result = MessageBox.Show(string.Format("{0} ({1}) is not a removable disk: it may be a system or internal disk.\n\nDo you really want to make it {2}?", selected_disk.Name, selected_disk.ID, _readonly ? "read-only" : "writable"), "Flash Disk Locker", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
                     if (result != MessageBoxResult.Yes)
                         return;
                 }
@@ -403,9 +403,9 @@ namespace Flash_disk_locker
                 {
                     GetDisk(false);
                     if (args.Error != null)
-                        MessageBox.Show("Error\n" + args.Error.Message, "Disk locker", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                        MessageBox.Show("Error\n" + args.Error.Message, "Flash Disk Locker", MessageBoxButton.OK, MessageBoxImage.Exclamation);
                     else
-                        MessageBox.Show(message, "Disk locker", MessageBoxButton.OK, done ? MessageBoxImage.Information : MessageBoxImage.Error);
+                        MessageBox.Show(message, "Flash Disk Locker", MessageBoxButton.OK, done ? MessageBoxImage.Information : MessageBoxImage.Error);
                 };
 
                 bw.RunWorkerAsync();
@@ -413,12 +413,12 @@ namespace Flash_disk_locker
 
             }
             else
-                MessageBox.Show("Please select a disk first.", "Disk locker", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+                MessageBox.Show("Please select a disk first.", "Flash Disk Locker", MessageBoxButton.OK, MessageBoxImage.Asterisk);
         }
 
         private void InfoBtm_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Hello Human", "Disk locker", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+            MessageBox.Show("Hello Human", "Flash Disk Locker", MessageBoxButton.OK, MessageBoxImage.Asterisk);
         }
 
         static ListItem MakeListItem(string row, List<int> columns, string detail)
@@ -488,9 +488,9 @@ namespace Flash_disk_locker
         private void ViewDiskInfo_ButtonClick(object sender, RoutedEventArgs e)
         {
             if (disk_lstbx.SelectedIndex > -1)
-                MessageBox.Show((disk_lstbx.SelectedItem as ListItem).DiskInfo, "Disk locker", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show((disk_lstbx.SelectedItem as ListItem).DiskInfo, "Flash Disk Locker", MessageBoxButton.OK, MessageBoxImage.Information);
             else
-                MessageBox.Show("Please select a disk first.", "Disk locker", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+                MessageBox.Show("Please select a disk first.", "Flash Disk Locker", MessageBoxButton.OK, MessageBoxImage.Asterisk);
         }
     }
 

@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Flash_disk_locker"
         mc:Ignorable="d"
-        Title="Disk Locker" Height="400" Width="550" Loaded="Window_Loaded" ResizeMode="NoResize" Icon="disk_locker.ico">
+        Title="Flash Disk Locker" Height="400" Width="550" Loaded="Window_Loaded" ResizeMode="NoResize" Icon="disk_locker.ico">
     <Grid>
         <Grid Height="32" VerticalAlignment="Top" Background="Black">
             <StackPanel Height="32" Orientation="Horizontal" VerticalAlignment="Top" Margin="0,0,76,0">
@@ -74,7 +74,7 @@
                             <GradientStop Color="#FF2929F1" Offset="0.996"/>
                             <GradientStop Color="Black"/>
                         </LinearGradientBrush>
-                    </TextBlock.Foreground><Run Text="Disk Locker tool"/><LineBreak/><Run Text="v1.1.1.0"/></TextBlock>
+                    </TextBlock.Foreground><Run Text="Flash Disk Locker"/><LineBreak/><Run Text="v1.1.1.0"/></TextBlock>
                 <Image HorizontalAlignment="Left" Margin="20,0,0,20" Width="30" Height="40" VerticalAlignment="Bottom" Source="Images/xbill.png" FlowDirection="LeftToRight"/>
             </Grid>
         </Grid>
