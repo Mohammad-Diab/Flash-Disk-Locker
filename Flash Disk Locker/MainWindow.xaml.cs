@@ -344,7 +344,7 @@ namespace Flash_disk_locker
             }
             else
             {
-                Title = "[Adminstrator] " + Title;
+                Title = "[Administrator] " + Title;
                 disk_lstbx.DataContext = data_binding;
                 GetDisk(true);
             }
@@ -406,7 +406,7 @@ namespace Flash_disk_locker
 
             }
             else
-                MessageBox.Show("Please select disk first.", "Disk locker", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+                MessageBox.Show("Please select a disk first.", "Disk locker", MessageBoxButton.OK, MessageBoxImage.Asterisk);
         }
 
         private void InfoBtm_Click(object sender, RoutedEventArgs e)
@@ -430,7 +430,7 @@ namespace Flash_disk_locker
                 item.Signature = multi_lines[1];
                 item.IsReadonly = IsDiskReadonly(number, multi_lines);
                 item.ReadOnly = item.IsReadonly ? Colors.Red : Colors.Green;
-                item.LockedTooltip = item.IsReadonly ? "Disk is Readonly" : "Disk is not Readonly";
+                item.LockedTooltip = item.IsReadonly ? "Disk is read-only" : "Disk is not read-only";
                 string bus = multi_lines[2].Substring(multi_lines[2].IndexOf(':') + 1).Trim().ToUpper();
                 item.Type = multi_lines[0].ToUpper().Contains("SSD") || bus == "NVME" ? DiskType.SSD : bus == "USB" || bus == "SD" || bus == "MMC" ? DiskType.Flash : DiskType.HDD;
                 item.DiskInfo = row.Trim() + "\n" + detail.Trim();
@@ -467,13 +467,13 @@ namespace Flash_disk_locker
                 {
                     action_btm_img.Source = new BitmapImage(new Uri("pack://application:,,,/Images/unlock.png"));
                     action_btm_txt.Content = "Unlock";
-                    action_btm.ToolTip = "Remove readonly mark up";
+                    action_btm.ToolTip = "Remove the read-only mark";
                 }
                 else
                 {
                     action_btm_img.Source = new BitmapImage(new Uri("pack://application:,,,/Images/lock.png"));
                     action_btm_txt.Content = "Lock";
-                    action_btm.ToolTip = "Mark as readonly";
+                    action_btm.ToolTip = "Mark as read-only";
                 }
         }
 
@@ -482,7 +482,7 @@ namespace Flash_disk_locker
             if (disk_lstbx.SelectedIndex > -1)
                 MessageBox.Show((disk_lstbx.SelectedItem as ListItem).DiskInfo, "Disk locker", MessageBoxButton.OK, MessageBoxImage.Information);
             else
-                MessageBox.Show("Please select disk first.", "Disk locker", MessageBoxButton.OK, MessageBoxImage.Asterisk);
+                MessageBox.Show("Please select a disk first.", "Disk locker", MessageBoxButton.OK, MessageBoxImage.Asterisk);
         }
     }
 

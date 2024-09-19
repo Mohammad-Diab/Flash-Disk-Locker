@@ -54,7 +54,7 @@
                         </GridView>
                     </ListView.View>
                 </ListView>
-                <Button x:Name="action_btm" Margin="0,0,10,10" VerticalAlignment="Bottom" Height="58" ToolTip="Mark as readonly" Background="Black" Click="Action_btm_Click">
+                <Button x:Name="action_btm" Margin="0,0,10,10" VerticalAlignment="Bottom" Height="58" ToolTip="Mark as read-only" Background="Black" Click="Action_btm_Click">
                     <StackPanel Orientation="Horizontal">
                         <Image x:Name="action_btm_img" Source="Images/lock.png" Width="36"/>
                         <Label x:Name="action_btm_txt" Foreground="White" Content="Lock" FontSize="30"/>
