@@ -5,15 +5,14 @@ A small Windows tool that makes a USB flash drive (or any other disk) read-only,
 ## Features
 
 - Lists the disks with their number, status, size, free space and a USB flash, HDD or SSD icon; a red or green mark shows whether each disk is read-only.
-- **Lock** sets the read-only attribute of the selected disk (`attribute disk set readonly`); on a read-only disk the button becomes **Unlock** and clears it.
+- **Lock** sets the read-only attribute of the selected disk (`attributes disk set readonly`); on a read-only disk the button becomes **Unlock** and clears it. diskpart's own message shows the result, and the list refreshes.
 - The info button shows diskpart's full details of the selected disk; the refresh button reads the list again.
 - The **Log** tab shows everything diskpart printed.
 
 ## Requirements
 
 - Windows with .NET Framework 4.0 or later. Windows 8, 10 and 11 already include it.
-- Administrator rights: diskpart needs them. Started without them, the app offers to restart itself as administrator.
-- Windows in English: the app reads diskpart's English output.
+- Administrator rights: diskpart needs them, so Windows asks for them (UAC prompt) every time the app starts.
 
 ## Usage
 
