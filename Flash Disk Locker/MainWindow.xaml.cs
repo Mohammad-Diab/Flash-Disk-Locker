@@ -431,7 +431,8 @@ namespace Flash_disk_locker
                 item.IsReadonly = IsDiskReadonly(number, multi_lines);
                 item.ReadOnly = item.IsReadonly ? Colors.Red : Colors.Green;
                 item.LockedTooltip = item.IsReadonly ? "Disk is Readonly" : "Disk is not Readonly";
-                item.Type = multi_lines[0].ToUpper().Contains("SSD") ? DiskType.SSD : multi_lines[2].ToUpper().Contains("SATA") ? DiskType.HDD : DiskType.Flash;
+                string bus = multi_lines[2].Substring(multi_lines[2].IndexOf(':') + 1).Trim().ToUpper();
+                item.Type = multi_lines[0].ToUpper().Contains("SSD") || bus == "NVME" ? DiskType.SSD : bus == "USB" || bus == "SD" || bus == "MMC" ? DiskType.Flash : DiskType.HDD;
                 item.DiskInfo = row.Trim() + "\n" + detail.Trim();
                 return item;
             }
