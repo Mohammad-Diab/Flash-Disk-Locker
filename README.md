@@ -6,6 +6,7 @@ A small Windows tool that makes a USB flash drive (or any other disk) read-only,
 
 - Lists the disks with their number, status, size, free space and a USB flash, HDD or SSD icon; a red or green mark shows whether each disk is read-only.
 - **Lock** sets the read-only attribute of the selected disk (`attributes disk set readonly`); on a read-only disk the button becomes **Unlock** and clears it. diskpart's own message shows the result, and the list refreshes.
+- On a disk that is not USB or SD (a system or internal disk), Lock and Unlock ask for confirmation first.
 - The info button shows diskpart's full details of the selected disk; the refresh button reads the list again.
 - The **Log** tab shows everything diskpart printed.
 

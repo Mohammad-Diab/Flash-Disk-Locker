@@ -360,12 +360,19 @@ namespace Flash_disk_locker
         {
             if (disk_lstbx.SelectedIndex > -1)
             {
+                ListItem selected_disk = disk_lstbx.SelectedItem as ListItem;
+                if (!selected_disk.IsRemovable)
+                {
+                    var result = MessageBox.Show(string.Format("{0} ({1}) is not a removable disk: it may be a system or internal disk.\n\nDo you really want to make it {2}?", selected_disk.Name, selected_disk.ID, _readonly ? "read-only" : "writable"), "Disk locker", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
+                    if (result != MessageBoxResult.Yes)
+                        return;
+                }
+
                 IsEnabled = false;
                 log.AppendLine("**********************************************");
                 log.AppendLine();
                 BackgroundWorker bw = new BackgroundWorker();
                 bw.WorkerReportsProgress = true;
-                ListItem selected_disk = disk_lstbx.SelectedItem as ListItem;
                 bool done = false;
                 string message = "";
                 bw.DoWork += (object sender, DoWorkEventArgs args) =>
@@ -432,7 +439,8 @@ namespace Flash_disk_locker
                 item.ReadOnly = item.IsReadonly ? Colors.Red : Colors.Green;
                 item.LockedTooltip = item.IsReadonly ? "Disk is read-only" : "Disk is not read-only";
                 string bus = multi_lines[2].Substring(multi_lines[2].IndexOf(':') + 1).Trim().ToUpper();
-                item.Type = multi_lines[0].ToUpper().Contains("SSD") || bus == "NVME" ? DiskType.SSD : bus == "USB" || bus == "SD" || bus == "MMC" ? DiskType.Flash : DiskType.HDD;
+                item.IsRemovable = bus == "USB" || bus == "SD" || bus == "MMC";
+                item.Type = multi_lines[0].ToUpper().Contains("SSD") || bus == "NVME" ? DiskType.SSD : item.IsRemovable ? DiskType.Flash : DiskType.HDD;
                 item.DiskInfo = row.Trim() + "\n" + detail.Trim();
                 return item;
             }
@@ -590,6 +598,13 @@ namespace Flash_disk_locker
         {
             get { return is_readonly; }
             set { is_readonly = value; }
+        }
+
+        bool is_removable;
+        public bool IsRemovable
+        {
+            get { return is_removable; }
+            set { is_removable = value; }
         }
 
         DiskType type;
