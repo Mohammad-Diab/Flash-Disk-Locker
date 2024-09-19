@@ -177,7 +177,6 @@ namespace Flash_disk_locker
                 {
                     Process process = new Process();
                     ProcessStartInfo psi = new ProcessStartInfo("cmd.exe");
-                    psi.Verb = "runas";
                     psi.RedirectStandardOutput = true;
                     psi.RedirectStandardInput = true;
                     psi.UseShellExecute = false;
@@ -272,26 +271,8 @@ namespace Flash_disk_locker
         {
             if (!IsRunningAsAdmin())
             {
-                var result = MessageBox.Show("you are not run this app as admin? do you want to relaunch it with admin previlage?", "Disk locker", MessageBoxButton.YesNo, MessageBoxImage.Question);
-                if (result == MessageBoxResult.Yes)
-                {
-                    Process p = new Process();
-                    ProcessStartInfo psi = new ProcessStartInfo(Environment.CommandLine.Replace("\"", ""));
-                    psi.Verb = "runas";
-                    p.StartInfo = psi;
-                    try
-                    {
-                        p.Start();
-                        Application.Current.Shutdown();
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show("Can't run this app\n" + ex.Message, "Disk locker", MessageBoxButton.OK, MessageBoxImage.Error);
-                        Application.Current.Shutdown();
-                    }
-                }
-                else
-                    Application.Current.Shutdown();
+                MessageBox.Show("This app needs administrator rights. Please run it as administrator.", "Disk locker", MessageBoxButton.OK, MessageBoxImage.Error);
+                Application.Current.Shutdown();
             }
             else
             {
@@ -323,7 +304,6 @@ namespace Flash_disk_locker
                     {
                         Process process = new Process();
                         ProcessStartInfo psi = new ProcessStartInfo("cmd.exe");
-                        psi.Verb = "runas";
                         psi.RedirectStandardOutput = true;
                         psi.RedirectStandardInput = true;
                         psi.UseShellExecute = false;
