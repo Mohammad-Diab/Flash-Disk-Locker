@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security.Principal;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -17,6 +20,7 @@ using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Microsoft.Win32.SafeHandles;
 
 namespace Flash_disk_locker
 {
@@ -173,83 +177,144 @@ namespace Flash_disk_locker
 
             bw.DoWork += (object sender, DoWorkEventArgs args) =>
             {
-                try
+                string output = RunDiskPart("list disk");
+                bw.ReportProgress(0, output);
+                List<int> columns;
+                List<string> rows = GetDiskRows(output, out columns);
+                if (rows.Count == 0)
+                    return;
+
+                List<string> commands = new List<string>();
+                foreach (var row in rows)
                 {
-                    Process process = new Process();
-                    ProcessStartInfo psi = new ProcessStartInfo("cmd.exe");
-                    psi.RedirectStandardOutput = true;
-                    psi.RedirectStandardInput = true;
-                    psi.UseShellExecute = false;
-                    psi.CreateNoWindow = true;
-                    process.StartInfo = psi;
-                    process.Start();
-                    process.StandardInput.WriteLine("diskpart");
-                    process.StandardInput.WriteLine("list disk");
-                    process.StandardInput.WriteLine("exit");
-                    bw.ReportProgress(0);
-                    List<string> tmp = new List<string>();
-                    while (!process.StandardOutput.EndOfStream)
-                    {
-                        string x = process.StandardOutput.ReadLine();
-                        log.AppendLine(x);
-                        if (x.Length > 9 && (x.ToLower().Contains("online") || x.ToLower().Contains("offline")))
-                        {
-                            tmp.Add(x);
-                            //bw.ReportProgress(1, x);
-                        }
-                        if (x.ToUpper().Equals("LEAVING DISKPART..."))
-                            break;
-
-                    }
-
-                    process.StandardInput.WriteLine("diskpart");
-                    foreach (var i in tmp)
-                    {
-                        process.StandardInput.WriteLine("select " + i.Substring(1, 8));
-                        process.StandardInput.WriteLine("detail disk");
-                    }
-                    process.StandardInput.WriteLine("exit");
-                    int ind = -1;
-                    string _line = "";
-                    string output = "";
-
-                    while (!(((_line = process.StandardOutput.ReadLine()).Equals("Leaving DiskPart...")) || process.StandardOutput.EndOfStream))
-                        output += _line + "\n";
-
-                    var disks = output.Split(new[] { "DISKPART> " }, StringSplitOptions.RemoveEmptyEntries);
-                    for (int i = 2; i < disks.Length; i += 2)
-                    {
-                        if (disks[i].Length > 35)
-                        {
-                            disks[i].Replace("\nLeaving DiskPart...", "");
-                            ind++;
-                            bw.ReportProgress(1, tmp[ind] + "\n" + disks[i]);
-                        }
-                    }
-                    process.StandardInput.WriteLine("exit");
+                    commands.Add("select disk " + GetDiskNumber(row));
+                    commands.Add("detail disk");
                 }
-                catch (Exception ex) { MessageBox.Show("Error\n" + ex.Message, "Disk locker", MessageBoxButton.OK, MessageBoxImage.Exclamation); }
+                output = RunDiskPart(commands.ToArray());
+                bw.ReportProgress(0, output);
+
+                var disks = output.Split(new[] { "DISKPART> " }, StringSplitOptions.None);
+                for (int i = 0; i < rows.Count && 2 * i + 2 < disks.Length; i++)
+                {
+                    var item = MakeListItem(rows[i], columns, disks[2 * i + 2]);
+                    if (item != null)
+                        bw.ReportProgress(1, item);
+                }
             };
 
             bw.ProgressChanged += (object sender, ProgressChangedEventArgs args) =>
             {
                 if (args.ProgressPercentage == 0)
-                    data_binding.Clear();
+                    log.Append(args.UserState.ToString());
                 else
                 {
-                    var item = MakeListItem(args.UserState.ToString());
-                    if (item != null)
-                        data_binding.Add(item);
+                    var item = args.UserState as ListItem;
+                    item.Img = new BitmapImage(new Uri("pack://application:,,,/Images/" + (item.Type == DiskType.SSD ? "SSD" : item.Type == DiskType.Flash ? "Flash" : "HDD") + ".png"));
+                    data_binding.Add(item);
                 }
-                    
             };
 
             bw.RunWorkerCompleted += (object sender, RunWorkerCompletedEventArgs args) =>
               {
+                  if (args.Error != null)
+                      MessageBox.Show("Error\n" + args.Error.Message, "Disk locker", MessageBoxButton.OK, MessageBoxImage.Exclamation);
                   IsEnabled = true;
               };
 
             bw.RunWorkerAsync();
+        }
+
+        static string RunDiskPart(params string[] commands)
+        {
+            Process process = new Process();
+            ProcessStartInfo psi = new ProcessStartInfo("diskpart.exe");
+            psi.RedirectStandardOutput = true;
+            psi.RedirectStandardInput = true;
+            psi.UseShellExecute = false;
+            psi.CreateNoWindow = true;
+            process.StartInfo = psi;
+            process.Start();
+            foreach (var command in commands)
+                process.StandardInput.WriteLine(command);
+            process.StandardInput.WriteLine("exit");
+            process.StandardInput.Close();
+            string output = process.StandardOutput.ReadToEnd();
+            process.WaitForExit();
+            return output;
+        }
+
+        static int RunDiskPartScript(out string output, params string[] commands)
+        {
+            string script = System.IO.Path.GetTempFileName();
+            File.WriteAllLines(script, commands);
+            try
+            {
+                Process process = new Process();
+                ProcessStartInfo psi = new ProcessStartInfo("diskpart.exe", "/s \"" + script + "\"");
+                psi.RedirectStandardOutput = true;
+                psi.UseShellExecute = false;
+                psi.CreateNoWindow = true;
+                process.StartInfo = psi;
+                process.Start();
+                output = process.StandardOutput.ReadToEnd();
+                process.WaitForExit();
+                return process.ExitCode;
+            }
+            finally
+            {
+                File.Delete(script);
+            }
+        }
+
+        static List<string> GetDiskRows(string output, out List<int> columns)
+        {
+            List<string> rows = new List<string>();
+            columns = new List<int>();
+            var lines = output.Replace("\r", "").Split('\n');
+            int start = Array.FindIndex(lines, x => x.Trim().Length > 0 && x.Trim(' ', '-').Length == 0);
+            if (start < 0)
+                return rows;
+
+            for (int i = 0; i < lines[start].Length; i++)
+                if (lines[start][i] == '-' && (i == 0 || lines[start][i - 1] != '-'))
+                    columns.Add(i);
+
+            for (int i = start + 1; i < lines.Length && lines[i].Trim().Length > 0; i++)
+                if (GetDiskNumber(lines[i]) > -1)
+                    rows.Add(lines[i]);
+            return rows;
+        }
+
+        static int GetDiskNumber(string row)
+        {
+            var match = Regex.Match(row, "[0-9]+");
+            return match.Success ? int.Parse(match.Value) : -1;
+        }
+
+        static string GetColumn(string row, List<int> columns, int index)
+        {
+            if (index >= columns.Count || columns[index] >= row.Length)
+                return "";
+            int end = index + 1 < columns.Count ? Math.Min(columns[index + 1], row.Length) : row.Length;
+            return row.Substring(columns[index], end - columns[index]).Trim();
+        }
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        static extern SafeFileHandle CreateFile(string file_name, uint access, uint share, IntPtr security, uint creation, uint flags, IntPtr template);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        static extern bool DeviceIoControl(SafeFileHandle device, uint code, IntPtr in_buffer, uint in_size, out DiskAttributes out_buffer, uint out_size, out uint returned, IntPtr overlapped);
+
+        static bool IsDiskReadonly(int number, string[] detail)
+        {
+            using (SafeFileHandle handle = CreateFile(@"\\.\PhysicalDrive" + number, 0, 3, IntPtr.Zero, 3, 0, IntPtr.Zero))
+            {
+                DiskAttributes attributes;
+                uint returned;
+                if (!handle.IsInvalid && DeviceIoControl(handle, 0x700F0, IntPtr.Zero, 0, out attributes, (uint)Marshal.SizeOf(typeof(DiskAttributes)), out returned, IntPtr.Zero))
+                    return (attributes.Attributes & 2) != 0;
+            }
+            return detail.Length > 9 && detail[9].ToLower().Contains("yes");
         }
 
         public bool IsRunningAsAdmin()
@@ -298,66 +363,38 @@ namespace Flash_disk_locker
                 BackgroundWorker bw = new BackgroundWorker();
                 bw.WorkerReportsProgress = true;
                 ListItem selected_disk = disk_lstbx.SelectedItem as ListItem;
+                bool done = false;
+                string message = "";
                 bw.DoWork += (object sender, DoWorkEventArgs args) =>
                 {
-                    try
+                    string output = RunDiskPart("select disk " + selected_disk.Number, "detail disk");
+                    bw.ReportProgress(0, output);
+                    var disks = output.Split(new[] { "DISKPART> " }, StringSplitOptions.None);
+                    if (disks.Length < 3 || !CompareDisks(disks[2], selected_disk))
                     {
-                        Process process = new Process();
-                        ProcessStartInfo psi = new ProcessStartInfo("cmd.exe");
-                        psi.RedirectStandardOutput = true;
-                        psi.RedirectStandardInput = true;
-                        psi.UseShellExecute = false;
-                        psi.CreateNoWindow = true;
-                        process.StartInfo = psi;
-                        process.Start();
-                        process.StandardInput.WriteLine("diskpart");
-                        process.StandardInput.WriteLine("list disk");
-                        int disk_id = -1, i = 0;
-                        while (!process.StandardOutput.EndOfStream)
-                        {
-                            string x = process.StandardOutput.ReadLine();
-                            log.AppendLine(x);
-                            if (x.Length > 9 && x.ToLower().Contains("online"))
-                            {
-                                if (CompareDisks(x.ToUpper(), selected_disk))
-                                {
-                                    disk_id = i;
-                                    process.StandardInput.WriteLine("select" + x.Substring(0, 10));
-
-                                    while (!process.StandardOutput.EndOfStream)
-                                    {
-                                        x = process.StandardOutput.ReadLine();
-                                        log.AppendLine(x);
-                                        if (x.Length > 0 && x.ToLower().Contains("disk "))
-                                        {
-                                            break;
-                                        }
-                                    }
-                                    process.StandardInput.WriteLine(string.Format("attribute disk {0} readonly", _readonly ? "set" : "clear"));
-
-                                    while (!process.StandardOutput.EndOfStream)
-                                    {
-                                        x = process.StandardOutput.ReadLine();
-                                        log.AppendLine(x);
-                                        if (x.Length > 0 && x.ToLower().Contains("attributes"))
-                                        {
-                                            MessageBox.Show(x, "Disk locker", MessageBoxButton.OK, x.Contains("successfully") ? MessageBoxImage.Information : MessageBoxImage.Error);
-                                            log.AppendLine(process.StandardOutput.ReadToEnd());
-                                        }
-                                    }
-
-                                    process.StandardOutput.ReadLine();
-
-
-                                    break;
-                                }
-                                i++;
-                            }
-                        }
-                        process.StandardInput.WriteLine("exit");
-                        process.Start();
+                        message = "The disk list has changed. Please refresh it and try again.";
+                        return;
                     }
-                    catch (Exception) { }
+
+                    int exit_code = RunDiskPartScript(out output, "select disk " + selected_disk.Number, string.Format("attributes disk {0} readonly", _readonly ? "set" : "clear"));
+                    bw.ReportProgress(0, output);
+                    done = exit_code == 0;
+                    message = string.Join("\n", output.Split(new[] { "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries).Skip(3).ToArray());
+                    if (message.Length == 0)
+                        message = "DiskPart exit code: " + exit_code;
+                };
+
+                bw.ProgressChanged += (object sender, ProgressChangedEventArgs args) =>
+                {
+                    log.Append(args.UserState.ToString());
+                };
+
+                bw.RunWorkerCompleted += (object sender, RunWorkerCompletedEventArgs args) =>
+                {
+                    if (args.Error != null)
+                        MessageBox.Show("Error\n" + args.Error.Message, "Disk locker", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                    else
+                        MessageBox.Show(message, "Disk locker", MessageBoxButton.OK, done ? MessageBoxImage.Information : MessageBoxImage.Error);
                 };
 
                 bw.RunWorkerAsync();
@@ -373,35 +410,34 @@ namespace Flash_disk_locker
             MessageBox.Show("Hello Human", "Disk locker", MessageBoxButton.OK, MessageBoxImage.Asterisk);
         }
 
-        private ListItem MakeListItem(string str)
+        static ListItem MakeListItem(string row, List<int> columns, string detail)
         {
-            var multi_lines = str.Split(new[] { "\n" }, StringSplitOptions.RemoveEmptyEntries);
-            if (multi_lines.Length > 10)
+            var multi_lines = detail.Split(new[] { "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+            int number = GetDiskNumber(row);
+            if (number > -1 && multi_lines.Length > 2)
             {
                 ListItem item = new ListItem();
-                item.ID = multi_lines[0].Substring(1, 8);
-                item.Status = multi_lines[0].Substring(12, 13);
-                item.Size = multi_lines[0].Substring(28, 7);
-                item.Free = multi_lines[0].Substring(38, 7);
-                item.Name = multi_lines[1];
-                item.IsReadonly = multi_lines[10].ToLower().Contains("yes");
+                item.Number = number;
+                item.ID = GetColumn(row, columns, 0);
+                item.Status = GetColumn(row, columns, 1);
+                item.Size = GetColumn(row, columns, 2);
+                item.Free = GetColumn(row, columns, 3);
+                item.Name = multi_lines[0];
+                item.Signature = multi_lines[1];
+                item.IsReadonly = IsDiskReadonly(number, multi_lines);
                 item.ReadOnly = item.IsReadonly ? Colors.Red : Colors.Green;
                 item.LockedTooltip = item.IsReadonly ? "Disk is Readonly" : "Disk is not Readonly";
-                item.Type = multi_lines[1].ToUpper().Contains("SSD") ? DiskType.SSD : multi_lines[3].ToUpper().Contains("SATA") ? DiskType.HDD : DiskType.Flash;
-                item.Img = new BitmapImage(new Uri("pack://application:,,,/Images/" + (item.Type == DiskType.SSD ? "SSD" : item.Type == DiskType.Flash ? "Flash" : "HDD") + ".png"));
-                item.DiskInfo = str;
+                item.Type = multi_lines[0].ToUpper().Contains("SSD") ? DiskType.SSD : multi_lines[2].ToUpper().Contains("SATA") ? DiskType.HDD : DiskType.Flash;
+                item.DiskInfo = row.Trim() + "\n" + detail.Trim();
                 return item;
             }
             return null;
         }
 
-        private bool CompareDisks(string str, ListItem item)
+        static bool CompareDisks(string detail, ListItem item)
         {
-            int num = Math.Abs(item.ID.ToUpper().CompareTo(str.Substring(1, 8))) +
-             Math.Abs(item.Status.ToUpper().CompareTo(str.Substring(12, 13))) +
-             Math.Abs(item.Size.ToUpper().CompareTo(str.Substring(28, 7))) +
-             Math.Abs(item.Free.ToUpper().CompareTo(str.Substring(38, 7)));
-            return num == 0;
+            var multi_lines = detail.Split(new[] { "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+            return multi_lines.Length > 1 && multi_lines[0] == item.Name && multi_lines[1] == item.Signature;
         }
 
         private void LockerTab_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -460,10 +496,25 @@ namespace Flash_disk_locker
         Flash = 3
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    struct DiskAttributes
+    {
+        public uint Version;
+        public uint Reserved;
+        public ulong Attributes;
+    }
+
     class ListItem
     {
         public ListItem()
         {
+        }
+
+        int number;
+        public int Number
+        {
+            get { return number; }
+            set { number = value; }
         }
 
         string id;
@@ -478,6 +529,13 @@ namespace Flash_disk_locker
         {
             get { return name; }
             set { name = value; }
+        }
+
+        string signature;
+        public string Signature
+        {
+            get { return signature; }
+            set { signature = value; }
         }
 
         string status;
