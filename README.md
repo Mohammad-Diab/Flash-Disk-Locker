@@ -9,6 +9,7 @@ A small Windows tool that makes a USB flash drive (or any other disk) read-only,
 - On a disk that is not USB or SD (a system or internal disk), Lock and Unlock ask for confirmation first.
 - The info button shows diskpart's full details of the selected disk; the refresh button reads the list again.
 - The **Log** tab shows everything diskpart printed.
+- The help button on the **Info** tab explains how to use the app.
 
 ## Requirements
 

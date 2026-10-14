@@ -158,7 +158,7 @@ namespace Flash_disk_locker
                     log.Clear();
                     break;
                 case TabItem.Info:
-                    MessageBox.Show("Coming Soon...", "Flash Disk Locker", MessageBoxButton.OK, MessageBoxImage.Information);
+                    MessageBox.Show("1. Select a disk in the Locker tab.\n2. Press Lock to make it read-only, or Unlock to make it writable again.\n3. A red mark means the disk is read-only, a green mark means it is writable.\n4. Disks that are not USB or SD (system or internal disks) ask for confirmation before they change.\n5. The refresh button reads the disk list again; the info button shows the selected disk's details.\n\nThe app needs administrator rights, so Windows asks for them (UAC prompt) when it starts. The Log tab shows everything diskpart printed.", "Flash Disk Locker", MessageBoxButton.OK, MessageBoxImage.Information);
                     break;
             }
         }
